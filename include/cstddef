@@ -1,0 +1,10 @@
+#pragma once
+
+// Minimal cstddef implementation for baremetal environment
+
+typedef unsigned int size_t;
+typedef int ptrdiff_t;
+typedef decltype(nullptr) nullptr_t;
+
+#define NULL nullptr
+#define offsetof(type, member) __builtin_offsetof(type, member)

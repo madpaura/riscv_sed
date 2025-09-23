@@ -1,0 +1,85 @@
+# Build artifacts
+build/
+*.o
+*.elf
+*.bin
+*.dump
+*.map
+*.lst
+
+# Compiler generated files
+*.d
+*.su
+*.i
+*.s
+
+# Debug files
+*.gdb
+*.debug
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+make_output.log
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# OS generated files
+.directory
+desktop.ini
+
+# QEMU files
+qemu.log
+*.qcow2
+
+# GDB history
+.gdb_history
+
+# Tags files
+tags
+TAGS
+.tags
+.TAGS
+
+# Core dumps
+core
+core.*
+
+# Linker map files
+*.map
+
+# Assembly listings
+*.lst
+
+# Object files from different architectures
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+
+# Dependency files
+.deps/
+.depend
+
+# Coverage files
+*.gcov
+*.gcda
+*.gcno
+
+# Profiling files
+gmon.out
+*.prof
