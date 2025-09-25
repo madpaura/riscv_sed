@@ -162,14 +162,39 @@ public:
             return current != other.current;
         }
         
+        bool operator==(const Iterator& other) const {
+            return current == other.current;
+        }
+        
         Iterator& operator++() {
             if (current) current = current->next;
             return *this;
         }
         
         Node& operator*() { return *current; }
+        Node* operator->() { return current; }
+        
+        // Check if iterator is valid
+        bool is_valid() const { return current != nullptr; }
+        
+        // Get key and value directly
+        const Key& key() const { return current->key; }
+        Value& value() { return current->value; }
+        const Value& value() const { return current->value; }
     };
     
     Iterator begin() { return Iterator(head); }
     Iterator end() { return Iterator(nullptr); }
+    
+    // Find method that returns iterator
+    Iterator find_iter(const Key& key) {
+        Node* current = head;
+        while (current) {
+            if (current->key == key) {
+                return Iterator(current);
+            }
+            current = current->next;
+        }
+        return end();
+    }
 };

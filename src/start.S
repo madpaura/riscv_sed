@@ -57,7 +57,6 @@ bss_done:
 halt:
     wfi
     j halt
-
 /* Function to call global constructors */
 __call_constructors:
     la t0, __init_array_start

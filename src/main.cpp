@@ -151,6 +151,53 @@ void test_map_functions(){
     uart::print_number(map[4]);
     uart::puts("\n");
     
+    uart::puts("   Testing map iteration:\n");
+    uart::puts("   Iterating through all elements:\n");
+    for (auto it = map.begin(); it != map.end(); ++it) {
+        uart::puts("   Key: ");
+        uart::print_number(it.key());
+        uart::puts(", Value: ");
+        uart::print_number(it.value());
+        uart::puts("\n");
+    }
+    
+    uart::puts("   Testing find_iter method:\n");
+    auto found_it = map.find_iter(2);
+    if (found_it != map.end()) {
+        uart::puts("   Found key 2 with value: ");
+        uart::print_number(found_it.value());
+        uart::puts("\n");
+    } else {
+        uart::puts("   Key 2 not found\n");
+    }
+    
+    uart::puts("   Testing find_iter for non-existent key:\n");
+    auto not_found_it = map.find_iter(99);
+    if (not_found_it != map.end()) {
+        uart::puts("   Found key 99 with value: ");
+        uart::print_number(not_found_it.value());
+        uart::puts("\n");
+    } else {
+        uart::puts("   Key 99 not found (as expected)\n");
+    }
+    
+    uart::puts("   Testing iterator modification:\n");
+    auto modify_it = map.find_iter(3);
+    if (modify_it != map.end()) {
+        uart::puts("   Original value for key 3: ");
+        uart::print_number(modify_it.value());
+        uart::puts("\n");
+        
+        modify_it.value() = 300;
+        uart::puts("   Modified value for key 3: ");
+        uart::print_number(modify_it.value());
+        uart::puts("\n");
+        
+        uart::puts("   Verifying modification via map[3]: ");
+        uart::print_number(map[3]);
+        uart::puts("\n");
+    }
+    
     uart::puts("   Map test completed successfully\n");
 }
 
