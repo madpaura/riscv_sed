@@ -75,6 +75,25 @@ public:
         return nullptr;
     }
     
+    // Operator[] for map[key] = value syntax
+    Value& operator[](const Key& key) {
+        // Check if key already exists
+        Node* current = head;
+        while (current) {
+            if (current->key == key) {
+                return current->value;
+            }
+            current = current->next;
+        }
+        
+        // Key doesn't exist, create new node with default value
+        Node* new_node = new Node(key, Value{});
+        new_node->next = head;
+        head = new_node;
+        size_++;
+        return new_node->value;
+    }
+    
     bool erase(const Key& key) {
         if (!head) return false;
         

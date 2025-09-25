@@ -102,37 +102,40 @@ void test_map_functions(){
     SimpleMap<int, int> map;
     uart::puts("   Map created\n");
     
-    uart::puts("   Inserting element [1] = 1...\n");
-    map.insert(1, 1);
-    uart::puts("   Element inserted\n");
+    uart::puts("   Using operator[] - map[1] = 1...\n");
+    map[1] = 1;
+    uart::puts("   Element inserted using operator[]\n");
     
     uart::puts("   Map size: ");
     uart::print_number(map.size());
     uart::puts("\n");
     
-    uart::puts("   Inserting element [2] = 2...\n");
-    map.insert(2, 2);
-    uart::puts("   Second element inserted\n");
+    uart::puts("   Using operator[] - map[2] = 2...\n");
+    map[2] = 2;
+    uart::puts("   Second element inserted using operator[]\n");
     
     uart::puts("   Map size: ");
     uart::print_number(map.size());
     uart::puts("\n");
     
-    uart::puts("   Inserting element [3] = 3...\n");
-    map.insert(3, 3);
-    uart::puts("   Third element inserted\n");
+    uart::puts("   Using operator[] - map[3] = 3...\n");
+    map[3] = 3;
+    uart::puts("   Third element inserted using operator[]\n");
     
     uart::puts("   Map size: ");
     uart::print_number(map.size());
     uart::puts("\n");
     
-    uart::puts("   Testing retrieval - map.find(2) = ");
-    int* value = map.find(2);
-    if (value) {
-        uart::print_number(*value);
-    } else {
-        uart::puts("not found");
-    }
+    uart::puts("   Testing retrieval - map[2] = ");
+    uart::print_number(map[2]);
+    uart::puts("\n");
+    
+    uart::puts("   Testing modification - map[2] = 20...\n");
+    map[2] = 20;
+    uart::puts("   Value modified using operator[]\n");
+    
+    uart::puts("   Verifying modification - map[2] = ");
+    uart::print_number(map[2]);
     uart::puts("\n");
     
     uart::puts("   Map test completed successfully\n");
