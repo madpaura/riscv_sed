@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "uart.h"
 
 // External symbols from linker script
 extern "C" {
@@ -15,24 +16,36 @@ void SimpleAllocator::init() {
     heap_start = &__heap_start;
     heap_end = &__heap_end;
     heap_current = heap_start;
+    
+    uart::puts("heap_start :: ");
+    uart::print_number((uint32_t)heap_start);
+    uart::puts("\n");
+    uart::puts("heap_end :: ");
+    uart::print_number((uint32_t)heap_end);
+    uart::puts("\n");
+    uart::puts("heap_current :: ");
+    uart::print_number((uint32_t)heap_current);
+    uart::puts("\n");
 }
 
 void* SimpleAllocator::allocate(size_t size) {
     // Align to 8-byte boundary
     size = (size + 7) & ~7;
     
+    // Simple bump allocator - no headers, no complexity
     if (heap_current + size > heap_end) {
         return nullptr; // Out of memory
     }
     
     void* ptr = heap_current;
     heap_current += size;
+    
     return ptr;
 }
 
 void SimpleAllocator::deallocate(void* ptr) {
-    // Simple allocator - no deallocation for now
-    // In a real implementation, you'd implement a free list
+    // Simple bump allocator - no deallocation
+    // This is acceptable for testing std::map
     (void)ptr;
 }
 
@@ -66,3 +79,4 @@ void operator delete[](void* ptr, size_t size) noexcept {
     (void)size;
     SimpleAllocator::deallocate(ptr);
 }
+

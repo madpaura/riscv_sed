@@ -1,7 +1,7 @@
 # RISC-V Baremetal C++ Makefile
 
 # Toolchain configuration
-CROSS_COMPILE = riscv64-unknown-elf-
+CROSS_COMPILE = riscv32-unknown-linux-musl-
 CC = $(CROSS_COMPILE)gcc
 CXX = $(CROSS_COMPILE)g++
 AS = $(CROSS_COMPILE)as
@@ -11,8 +11,8 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 
 # Target configuration
 TARGET = riscv-program
-ARCH = rv32imac_zicsr
-ABI = ilp32
+ARCH = rv32imafdc_zicsr
+ABI = ilp32d
 
 # Directories
 SRC_DIRS = src src/drivers src/kernel src/lib
@@ -34,9 +34,9 @@ BUILD_SUBDIRS = $(sort $(dir $(OBJECTS)))
 # Compiler flags
 CPPFLAGS = $(addprefix -I,$(INCLUDE_DIRS)) -march=$(ARCH) -mabi=$(ABI) -mcmodel=medany
 CXXFLAGS = -std=c++17 -O2 -g -Wall -Wextra -fno-exceptions -fno-rtti -fno-threadsafe-statics \
-           -ffunction-sections -fdata-sections -nostdlib -nostartfiles -ffreestanding
+           -ffunction-sections -fdata-sections -nostartfiles
 ASFLAGS = -march=$(ARCH) -mabi=$(ABI)
-LDFLAGS = -nostdlib -nostartfiles -T linker.ld -Wl,--gc-sections -Wl,-m,elf32lriscv
+LDFLAGS = -nostartfiles -T linker.ld -Wl,--gc-sections -Wl,-m,elf32lriscv -lc -lm -lgcc -lstdc++
 
 # Default target
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin $(BUILD_DIR)/$(TARGET).dump

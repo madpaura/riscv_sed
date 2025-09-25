@@ -3,10 +3,11 @@
 OUTPUT_ARCH(riscv:rv32)
 ENTRY(_start)
 
-/* Memory layout for QEMU virt machine */
+/* Memory layout with ITCM and DTCM sections */
 MEMORY
 {
-    RAM (rwx) : ORIGIN = 0x80000000, LENGTH = 128M
+    ITCM (rx)  : ORIGIN = 0x80000000, LENGTH = 64M   /* Instruction Tightly Coupled Memory */
+    DTCM (rw)  : ORIGIN = 0x84000000, LENGTH = 64M   /* Data Tightly Coupled Memory */
 }
 
 /* Stack size */
@@ -16,7 +17,7 @@ SECTIONS
 {
     . = 0x80000000;
     
-    /* Text section - executable code */
+    /* Text section - executable code in ITCM */
     .text : ALIGN(4)
     {
         KEEP(*(.text.vectors))  /* Interrupt vector table first */
@@ -24,24 +25,26 @@ SECTIONS
         *(.text)
         *(.text.*)
         . = ALIGN(4);
-    } > RAM
+    } > ITCM
     
-    /* Read-only data */
+    /* Read-only data in ITCM (close to code for better performance) */
     .rodata : ALIGN(4)
     {
         *(.rodata)
         *(.rodata.*)
+        *(.srodata)
+        *(.srodata.*)
         . = ALIGN(4);
-    } > RAM
+    } > ITCM
     
-    /* Global constructor/destructor tables */
+    /* Global constructor/destructor tables in ITCM */
     .init_array : ALIGN(4)
     {
         __init_array_start = .;
         KEEP(*(.init_array))
         KEEP(*(SORT(.init_array.*)))
         __init_array_end = .;
-    } > RAM
+    } > ITCM
     
     .fini_array : ALIGN(4)
     {
@@ -49,33 +52,40 @@ SECTIONS
         KEEP(*(.fini_array))
         KEEP(*(SORT(.fini_array.*)))
         __fini_array_end = .;
-    } > RAM
+    } > ITCM
     
-    /* Initialized data */
+    /* Switch to DTCM for data sections */
+    . = ORIGIN(DTCM);
+    
+    /* Initialized data in DTCM */
     .data : ALIGN(4)
     {
         __data_start = .;
         *(.data)
         *(.data.*)
+        *(.sdata)
+        *(.sdata.*)
         __data_end = .;
-    } > RAM
+    } > DTCM
     
-    /* Uninitialized data */
+    /* Uninitialized data in DTCM */
     .bss : ALIGN(4)
     {
         __bss_start = .;
         *(.bss)
         *(.bss.*)
+        *(.sbss)
+        *(.sbss.*)
         *(COMMON)
         __bss_end = .;
-    } > RAM
+    } > DTCM
     
     /* Heap starts after BSS */
     . = ALIGN(4);
     __heap_start = .;
     
-    /* Stack at the end of RAM */
-    . = ORIGIN(RAM) + LENGTH(RAM);
+    /* Stack at the end of DTCM */
+    . = ORIGIN(DTCM) + LENGTH(DTCM);
     . = ALIGN(16);
     __stack_top = .;
     . -= STACK_SIZE;
@@ -83,6 +93,20 @@ SECTIONS
     
     /* Heap ends where stack begins */
     __heap_end = __stack_bottom;
+    
+    /* C++ exception handling sections (even if exceptions disabled) */
+    .eh_frame : ALIGN(4)
+    {
+        KEEP(*(.eh_frame))
+        . = ALIGN(4);
+    } > DTCM
+    
+    .gcc_except_table : ALIGN(4)
+    {
+        *(.gcc_except_table)
+        *(.gcc_except_table.*)
+        . = ALIGN(4);
+    } > DTCM
     
     /* Debug sections */
     .debug_info     0 : { *(.debug_info) }

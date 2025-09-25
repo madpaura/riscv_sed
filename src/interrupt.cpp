@@ -163,6 +163,15 @@ void unhandled_exception_handler() {
     (void)cause;
     (void)epc;
     (void)tval;
+    
+    // Halt the CPU instead of resetting
+    // Disable all interrupts to prevent further execution
+    InterruptController::disable_global_interrupts();
+    
+    // Infinite loop with wait-for-interrupt to halt the CPU
+    while (1) {
+        asm volatile ("wfi"); // Wait for interrupt (low power halt)
+    }
 }
 
 void machine_software_interrupt_handler() {

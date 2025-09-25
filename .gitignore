@@ -47,7 +47,6 @@ qemu.log
 
 # GDB history
 .gdb_history
-
 # Tags files
 tags
 TAGS
@@ -83,3 +82,4 @@ core.*
 # Profiling files
 gmon.out
 *.prof
+riscv

@@ -1,247 +1,186 @@
 #include "memory.h"
+
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <cstdint>
+#include <cstddef>
 #include "sample_class.h"
-#include "interrupt.h"
 
-// Simple UART functions for QEMU virt machine
-namespace uart {
-    constexpr uint64_t UART_BASE = 0x10000000;
-    constexpr uint64_t UART_THR = UART_BASE + 0x00; // Transmit Holding Register
-    constexpr uint64_t UART_LSR = UART_BASE + 0x05; // Line Status Register
-    
-    void putchar(char c) {
-        // Wait for transmitter to be ready
-        while ((*(volatile uint8_t*)UART_LSR & 0x20) == 0) {
-            // Wait
-        }
-        *(volatile uint8_t*)UART_THR = c;
-    }
-    
-    void puts(const char* str) {
-        while (*str) {
-            putchar(*str++);
-        }
-    }
-    
-    void print_number(int num) {
-        if (num == 0) {
-            putchar('0');
-            return;
-        }
-        
-        if (num < 0) {
-            putchar('-');
-            num = -num;
-        }
-        
-        char buffer[16];
-        int i = 0;
-        while (num > 0) {
-            buffer[i++] = '0' + (num % 10);
-            num /= 10;
-        }
-        
-        // Print in reverse order
-        while (i > 0) {
-            putchar(buffer[--i]);
-        }
-    }
-    
-    void print_hex(uint32_t num) {
-        const char hex_chars[] = "0123456789ABCDEF";
-        char buffer[9]; // 8 hex digits + null terminator
-        int i = 7;
-        
-        buffer[8] = '\0';
-        
-        if (num == 0) {
-            puts("00000000");
-            return;
-        }
-        
-        while (i >= 0) {
-            buffer[i] = hex_chars[num & 0xF];
-            num >>= 4;
-            i--;
-        }
-        
-        puts(buffer);
-    }
-}
+// Workaround for max_align_t issue in cross-compilation
+#ifndef __DEFINED_max_align_t
+typedef long double max_align_t;
+#define __DEFINED_max_align_t
+#endif
 
-// Test function to demonstrate C++ features
-void test_cpp_features() {
-    uart::puts("=== Testing C++ Features ===\n");
+#include <map>
+#include <vector>
+#include "simple_map.h"
+#include "uart.h"
+#include <interrupt.h>
+#include <interrupt.h>
+
+void test_stdlib_functions() {
+    uart::puts("=== Testing Standard Library Functions ===\n");
     
-    // Test memory allocator
-    uart::puts("1. Testing memory allocation...\n");
-    uart::puts("   Free memory: ");
-    uart::print_number(SimpleAllocator::get_free_memory());
-    uart::puts(" bytes\n");
+    // Test malloc/free
+    uart::puts("1. Testing malloc/free:\n");
+    void* ptr = malloc(100);
+    if (ptr) {
+        uart::puts("   malloc(100) successful\n");
+        free(ptr);
+        uart::puts("   free() successful\n");
+    }
     
-    // Test dynamic allocation
-    int* test_ptr = new int(42);
-    uart::puts("   Allocated int with value: ");
-    uart::print_number(*test_ptr);
+    // Test string functions
+    uart::puts("2. Testing string functions:\n");
+    char str1[50] = "Hello";
+    char str2[50] = " World";
+    char combined[100];
+    
+    strcpy(combined, str1);
+    strcat(combined, str2);
+    uart::puts("   strcpy + strcat result: ");
+    uart::puts(combined);
+    uart::puts("\n   Length: ");
+    // uart::print_number(strlen(combined));
     uart::puts("\n");
-    delete test_ptr;
-    
-    // Test array allocation
-    int* test_array = new int[5];
-    for (int i = 0; i < 5; ++i) {
-        test_array[i] = i * 10;
-    }
-    uart::puts("   Allocated array: [");
-    for (int i = 0; i < 5; ++i) {
-        uart::print_number(test_array[i]);
+ 
+    // Test memory functions
+    uart::puts("3. Testing memory functions:\n");
+    int numbers[5] = {1, 2, 3, 4, 5};
+    int copy[5];
+    memcpy(copy, numbers, sizeof(numbers));
+    uart::puts("   memcpy result: [");
+    for (int i = 0; i < 5; i++) {
+        uart::print_number(copy[i]);
         if (i < 4) uart::puts(", ");
     }
     uart::puts("]\n");
-    delete[] test_array;
     
-    uart::puts("   Free memory after cleanup: ");
-    uart::print_number(SimpleAllocator::get_free_memory());
-    uart::puts(" bytes\n\n");
+    // Test math functions
+    uart::puts("4. Testing math functions:\n");
+    double x = 4.0;
+    uart::puts("   sqrt(4.0) = ");
+    uart::print_number((int)sqrt(x));
+    uart::puts("\n   abs(-42) = ");
+    uart::print_number(abs(-42));
+    uart::puts("\n");
+}
+
+class SampleClass {
+public:
+    SampleClass() {
+        uart::puts("SampleClass constructor called\n");
+    }
     
-    // Test DataProcessor class
-    uart::puts("2. Testing DataProcessor class...\n");
-    uart::puts("   Creating DataProcessor instance...\n");
+    void print() {
+        uart::puts("SampleClass instance created\n");
+    }
+};
+
+
+void test_class_functions(){
+    uart::puts("=== Testing Class Functions ===\n");
     
-    DataProcessor processor(8);
-    uart::puts("   Instance count: ");
-    uart::print_number(DataProcessor::get_instance_count());
+    // Test class functions
+    uart::puts("1. Testing class functions:\n");
+    SampleClass obj;
+    obj.print();
+
+    SampleClass* obj2 = new SampleClass();
+    obj2->print();
+    delete obj2;
+}
+
+void test_map_functions(){
+    uart::puts("=== Testing Map Functions ===\n");
+    
+    uart::puts("1. Testing SimpleMap (std::map alternative):\n");
+    uart::puts("   Creating map...\n");
+    
+    SimpleMap<int, int> map;
+    uart::puts("   Map created\n");
+    
+    uart::puts("   Inserting element [1] = 1...\n");
+    map.insert(1, 1);
+    uart::puts("   Element inserted\n");
+    
+    uart::puts("   Map size: ");
+    uart::print_number(map.size());
     uart::puts("\n");
     
-    // Test map operations
-    uart::puts("   Testing map operations...\n");
-    processor.demonstrate_map_operations();
+    uart::puts("   Inserting element [2] = 2...\n");
+    map.insert(2, 2);
+    uart::puts("   Second element inserted\n");
     
-    processor.add_data(10, 1000);
-    int* value = processor.get_data(10);
+    uart::puts("   Map size: ");
+    uart::print_number(map.size());
+    uart::puts("\n");
+    
+    uart::puts("   Inserting element [3] = 3...\n");
+    map.insert(3, 3);
+    uart::puts("   Third element inserted\n");
+    
+    uart::puts("   Map size: ");
+    uart::print_number(map.size());
+    uart::puts("\n");
+    
+    uart::puts("   Testing retrieval - map.find(2) = ");
+    int* value = map.find(2);
     if (value) {
-        uart::puts("   Retrieved value for key 10: ");
         uart::print_number(*value);
-        uart::puts("\n");
+    } else {
+        uart::puts("not found");
     }
-    
-    // Test dynamic memory operations
-    uart::puts("   Testing dynamic memory operations...\n");
-    processor.demonstrate_dynamic_memory();
-    
-    const int* processed_data = processor.get_processed_data();
-    uart::puts("   Processed array: [");
-    for (size_t i = 0; i < 5; ++i) {
-        uart::print_number(processed_data[i]);
-        if (i < 4) uart::puts(", ");
-    }
-    uart::puts("]\n");
-    
-    // Test copy constructor
-    uart::puts("   Testing copy constructor...\n");
-    {
-        DataProcessor processor_copy(processor);
-        uart::puts("   Instance count after copy: ");
-        uart::print_number(DataProcessor::get_instance_count());
-        uart::puts("\n");
-    } // processor_copy goes out of scope here
-    
-    uart::puts("   Instance count after copy destruction: ");
-    uart::print_number(DataProcessor::get_instance_count());
     uart::puts("\n");
     
-    processor.print_statistics();
-    
-    uart::puts("   Final free memory: ");
-    uart::print_number(SimpleAllocator::get_free_memory());
-    uart::puts(" bytes\n\n");
+    uart::puts("   Map test completed successfully\n");
 }
 
-// Test function to demonstrate interrupt functionality
-void test_interrupt_system() {
-    uart::puts("=== Testing Interrupt System ===\n");
+void test_math_functions() {
+    uart::puts("=== Testing Math Functions ===\n");
     
-    // Initialize interrupt controller
-    uart::puts("1. Initializing interrupt controller...\n");
-    InterruptController::init();
+    // Test basic math functions
+    uart::puts("1. Testing basic math:\n");
+    uart::puts("   abs(-42) = ");
+    uart::print_number(abs(-42));
+    uart::puts("\n");
     
-    // Display initial interrupt statistics
-    const InterruptStats& stats = InterruptController::get_stats();
-    uart::puts("   Initial interrupt counts:\n");
-    uart::puts("   - Machine software: ");
-    uart::print_number(stats.machine_software_count);
-    uart::puts("\n   - Machine timer: ");
-    uart::print_number(stats.machine_timer_count);
-    uart::puts("\n   - Machine external: ");
-    uart::print_number(stats.machine_external_count);
-    uart::puts("\n   - Unhandled exceptions: ");
-    uart::print_number(stats.unhandled_exception_count);
-    uart::puts("\n\n");
+    uart::puts("   sqrt(16) = ");
+    uart::print_number((int)sqrt(16.0));
+    uart::puts("\n");
     
-    // Test software interrupt
-    uart::puts("2. Testing software interrupt...\n");
-    InterruptController::enable_machine_software_interrupt();
-    InterruptController::enable_global_interrupts();
+    uart::puts("   pow(2, 3) = ");
+    uart::print_number((int)pow(2.0, 3.0));
+    uart::puts("\n");
     
-    uart::puts("   Triggering software interrupt...\n");
-    InterruptController::trigger_software_interrupt();
-    
-    // Small delay to allow interrupt processing
-    for (volatile int i = 0; i < 1000; i++) {
-        // Wait
+    // Test random numbers
+    uart::puts("2. Testing random numbers:\n");
+    srand(42);  // Seed for reproducible results
+    uart::puts("   Random numbers: ");
+    for (int i = 0; i < 5; i++) {
+        uart::print_number(rand() % 100);
+        uart::puts(" ");
     }
-    
-    // Display updated statistics
-    const InterruptStats& updated_stats = InterruptController::get_stats();
-    uart::puts("   Updated interrupt counts:\n");
-    uart::puts("   - Machine software: ");
-    uart::print_number(updated_stats.machine_software_count);
-    uart::puts("\n   - Machine timer: ");
-    uart::print_number(updated_stats.machine_timer_count);
-    uart::puts("\n   - Machine external: ");
-    uart::print_number(updated_stats.machine_external_count);
-    uart::puts("\n   - Unhandled exceptions: ");
-    uart::print_number(updated_stats.unhandled_exception_count);
-    uart::puts("\n\n");
-    
-    // Test CSR access
-    uart::puts("3. Testing CSR access...\n");
-    uint32_t mstatus = InterruptController::read_csr(CSR_MSTATUS);
-    uint32_t mie = InterruptController::read_csr(CSR_MIE);
-    uint32_t mip = InterruptController::read_csr(CSR_MIP);
-    
-    uart::puts("   MSTATUS: 0x");
-    uart::print_hex(mstatus);
-    uart::puts("\n   MIE: 0x");
-    uart::print_hex(mie);
-    uart::puts("\n   MIP: 0x");
-    uart::print_hex(mip);
-    uart::puts("\n\n");
-    
-    // Disable interrupts for clean shutdown
-    InterruptController::disable_global_interrupts();
-    uart::puts("   Interrupts disabled for clean shutdown.\n\n");
+    uart::puts("\n");
 }
 
-// Main function
 extern "C" int main() {
-    // Initialize memory allocator
+    uart::puts("RISC-V C++ Program with Standard Library\n");
+    uart::puts("========================================\n\n");
+
     SimpleAllocator::init();
+    InterruptController::init();
+    InterruptController::enable_global_interrupts();
+
+    test_stdlib_functions();
+    uart::puts("\n");
+    test_class_functions();
+    // test_math_functions();
+    // uart::puts("\n");
+    test_map_functions();
     
-    uart::puts("RISC-V Baremetal C++ Program\n");
-    uart::puts("=============================\n\n");
-    
-    uart::puts("System initialized successfully!\n");
-    uart::puts("Heap size: ");
-    uart::print_number(SimpleAllocator::get_free_memory());
-    uart::puts(" bytes\n\n");
-    
-    // Test C++ features
-    test_cpp_features();
-    
-    // Test interrupt system (commented out to avoid potential issues)
-    // test_interrupt_system();
-    
-    uart::puts("=== All tests completed successfully! ===\n");
-    uart::puts("Program finished. System will halt.\n");
-    
+    uart::puts("\n=== All tests completed! ===\n");
     return 0;
 }
