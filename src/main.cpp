@@ -16,6 +16,7 @@ typedef long double max_align_t;
 #include <map>
 #include <vector>
 #include "simple_map.h"
+#include "simple_list.h"
 #include "uart.h"
 #include <interrupt.h>
 #include <interrupt.h>
@@ -138,7 +139,92 @@ void test_map_functions(){
     uart::print_number(map[2]);
     uart::puts("\n");
     
+    uart::puts("   Testing emplace_back - map.emplace_back(4, 40)...\n");
+    map.emplace_back(4, 40);
+    uart::puts("   Element emplaced successfully\n");
+    
+    uart::puts("   Map size after emplace_back: ");
+    uart::print_number(map.size());
+    uart::puts("\n");
+    
+    uart::puts("   Verifying emplaced value - map[4] = ");
+    uart::print_number(map[4]);
+    uart::puts("\n");
+    
     uart::puts("   Map test completed successfully\n");
+}
+
+void test_list_functions() {
+    uart::puts("=== Testing List Functions ===\n");
+    
+    uart::puts("1. Testing SimpleList (std::list alternative):\n");
+    uart::puts("   Creating list...\n");
+    
+    SimpleList<int> list;
+    uart::puts("   List created\n");
+    
+    uart::puts("   Testing push_back...\n");
+    list.push_back(10);
+    list.push_back(20);
+    list.push_back(30);
+    uart::puts("   Elements added with push_back\n");
+    
+    uart::puts("   List size: ");
+    uart::print_number(list.size());
+    uart::puts("\n");
+    
+    uart::puts("   Testing front and back access:\n");
+    uart::puts("   Front: ");
+    uart::print_number(list.front());
+    uart::puts(", Back: ");
+    uart::print_number(list.back());
+    uart::puts("\n");
+    
+    uart::puts("   Testing push_front...\n");
+    list.push_front(5);
+    uart::puts("   Element added with push_front\n");
+    
+    uart::puts("   New front: ");
+    uart::print_number(list.front());
+    uart::puts("\n");
+    
+    uart::puts("   Testing emplace_back...\n");
+    list.emplace_back(40);
+    uart::puts("   Element emplaced at back\n");
+    
+    uart::puts("   New back: ");
+    uart::print_number(list.back());
+    uart::puts("\n");
+    
+    uart::puts("   Testing emplace_front...\n");
+    list.emplace_front(1);
+    uart::puts("   Element emplaced at front\n");
+    
+    uart::puts("   New front: ");
+    uart::print_number(list.front());
+    uart::puts("\n");
+    
+    uart::puts("   Final list size: ");
+    uart::print_number(list.size());
+    uart::puts("\n");
+    
+    uart::puts("   Testing iterator - List contents: ");
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        uart::print_number(*it);
+        uart::puts(" ");
+    }
+    uart::puts("\n");
+    
+    uart::puts("   Testing pop operations...\n");
+    list.pop_front();
+    list.pop_back();
+    uart::puts("   Popped front and back\n");
+    
+    uart::puts("   Size after pops: ");
+    uart::print_number(list.size());
+    uart::puts("\n");
+    
+    uart::puts("   List test completed successfully\n");
 }
 
 void test_math_functions() {
@@ -180,9 +266,10 @@ extern "C" int main() {
     test_stdlib_functions();
     uart::puts("\n");
     test_class_functions();
-    // test_math_functions();
-    // uart::puts("\n");
+    uart::puts("\n");
     test_map_functions();
+    uart::puts("\n");
+    test_list_functions();
     
     uart::puts("\n=== All tests completed! ===\n");
     return 0;

@@ -94,6 +94,26 @@ public:
         return new_node->value;
     }
     
+    // Emplace back functionality for map
+    template<typename... Args>
+    void emplace_back(const Key& key, Args&&... args) {
+        // Check if key already exists
+        Node* current = head;
+        while (current) {
+            if (current->key == key) {
+                current->value = Value(args...);
+                return;
+            }
+            current = current->next;
+        }
+        
+        // Create new node with constructed value
+        Node* new_node = new Node(key, Value(args...));
+        new_node->next = head;
+        head = new_node;
+        size_++;
+    }
+    
     bool erase(const Key& key) {
         if (!head) return false;
         
